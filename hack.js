@@ -8,6 +8,7 @@ hisEn.starttime = "";
 hisEn.tonowsum = 0
 //连续失败轮数
 hisEn.betArr = [1,2,3,4,5,6,7]
+// hisEn.betArr = [1,2,5,6,7,8,9]
 hisEn.lossRounds = 0
 hisEn.tripleSame = {n:0,t:0}
 //                  期数        投注时间     投注明细                 单注金额      是否开奖      开奖明细        开奖胜负金额
@@ -17,7 +18,10 @@ var tmpRecord = { roundno: "", bettime: "", betArr: "",wagers: "", singleBet: ""
 var betHandler = {};
 betHandler.account = "yavv556";
 betHandler.stype = "checkxiadan";
+//bjsc
 betHandler.gameno = 11;
+//jssc
+// betHandler.gameno = 22;
 betHandler.wagerroundno = 'A';
 //设置投注计划
 // betHandler.ref = { "1": 2, "2": 8, "3": 28, "4": 96, "5": 322, "6": 1076, "7": 3588, "8": 11962, "9": 39876, "10": 132922 }
@@ -196,13 +200,13 @@ function clock(){
 }
 function bet_data_table(){
     var title_arr = ['期数','投注时间','投注明细','单注金额','是否开奖','开奖明细','开奖胜负金额']
-    var bet_table='<table style=\"position:fixed;z-index:10000;left:20px;bottom:10px;width:800px;height:300px;overflow-y:scroll;text-align: center;border-top:solid 1px #333333;border-left:solid 1px #333333;border-right:0;border-bottom:0;\" border=\"1\" cellspacing=\"0\" cellpadding=\"0\" class=\"info_table\"><tbody><tr>'
+    var bet_table='<table style=\"position:fixed;z-index:10000;background-color:white;font-size:10px;left:20px;bottom:10px;width:800px;height:300px;overflow-y:scroll;overflow-x:scroll;text-align: center;border-top:solid 1px #333333;border-left:solid 1px #333333;border-right:0;border-bottom:0;\" border=\"1\" cellspacing=\"0\" cellpadding=\"0\" class=\"info_table\"><tbody><tr>'
     for(var k in title_arr){
         bet_table += '<th nowrap=\"nowrap\"><span>'+title_arr[k]+'</span></th>'
     }
     bet_table += '</tr>'
     for(var k in hisEn.record){
-        bet_table = '<tr><td ><span>'+hisEn.record[k].roundno+'</span></td>'
+        bet_table += '<tr><td ><span>'+hisEn.record[k].roundno+'</span></td>'
         bet_table += '<td ><span>'+hisEn.record[k].bettime+'</span></td>'
         bet_table += '<td ><span>'+hisEn.record[k].betArr+'</span></td>'
         bet_table += '<td ><span>'+hisEn.record[k].singleBet+'</span></td>'
@@ -218,8 +222,12 @@ function bet_data_table(){
 
     var bet_div=document.getElementById("bet_data_table")
     if(!bet_div){
-        document.body.appendChild('<div id=\"bet_data_table\"></div>')
-        bet_div=document.getElementById("bet_data_table")
+        bet_div = document.createElement('div');
+        bet_div.setAttribute("id","bet_data_table");
+        bet_div.style.overflowY="scroll"
+        bet_div.style.overflowX="scroll"
+        bet_div.innerHTML = 'test';
+        document.documentElement.appendChild(bet_div);
     }
     bet_div.innerHTML= bet_table
 }
@@ -227,168 +235,167 @@ function work() {
     if (hisEn.starttime = "") {
         hisEn.starttime = nowScaleSeconds();
     }
-    console.log("==============每分钟1次，尝试本轮下单，本轮已下单后，不重复下单=================")
     bet_loadDrawsInfo(betHandler.gameno, function (data) {
-        try {
-            //查看当前轮数信息及开奖信息
-            var info = parseJSON(data.d);
-            //开奖计算
-            if(info.message.lr&&info.message.lr.length>0){
-                if(hisEn.record.length>0){
-                    for(var k=0;k<hisEn.record.length;k++){
-                        //更新开奖信息
-                        if(hisEn.record[k].roundno == info.message.ld&&hisEn.record[k].isdraw==false){
-                            var tmpSum = 0
-                            var WorL = false
-                            for(var i in betHandler.betArr){
-                                if(betHandler.betArr[i]==parseInt(info.message.lr[0],10)){
-                                    WorL = true
-                                    break
-                                }
+        //查看当前轮数信息及开奖信息
+        var info = parseJSON(data.d);
+        console.log("=============="+info.message.cd+"每分钟1次，尝试本轮下单，本轮已下单后，不重复下单=================")
+        console.log("hisEn.record:"+JSON.stringify(hisEn.record))
+        //开奖计算
+        if(info.message.lr&&info.message.lr.length>0){
+            if(hisEn.record.length>0){
+                for(var k=0;k<hisEn.record.length;k++){
+                    //更新开奖信息
+                    if(hisEn.record[k].roundno == info.message.ld&&hisEn.record[k].isdraw==false){
+                        var tmpSum = 0
+                        var WorL = false
+                        for(var i in betHandler.betArr){
+                            if(betHandler.betArr[i]==parseInt(info.message.lr[0],10)){
+                                WorL = true
+                                break
                             }
+                        }
 
-                            if(WorL){
-                                var tmpSingleBet = parseInt(hisEn.record[k].singleBet, 10)
-                                tmpSum = tmpSingleBet*(10 - betHandler.betArr.length)
-                                hisEn.lossRounds = 0
-                            }else{
-                                var tmpSingleBet = parseInt(hisEn.record[k].singleBet, 10)
-                                tmpSum = 0-tmpSingleBet*betHandler.betArr.length
-                                hisEn.lossRounds++
-                            }
-                            hisEn.record[k].isdraw=true
-                            hisEn.record[k].factwagers=info.message.lr
-                            hisEn.record[k].resultsum=tmpSum
-    
-                            hisEn.tonowsum = hisEn.tonowsum+tmpSum
+                        if(WorL){
+                            var tmpSingleBet = parseInt(hisEn.record[k].singleBet, 10)
+                            tmpSum = tmpSingleBet*(10 - betHandler.betArr.length)
+                            hisEn.lossRounds = 0
+                        }else{
+                            var tmpSingleBet = parseInt(hisEn.record[k].singleBet, 10)
+                            tmpSum = 0-tmpSingleBet*betHandler.betArr.length
+                            hisEn.lossRounds++
+                        }
+                        hisEn.record[k].isdraw=true
+                        hisEn.record[k].factwagers=info.message.lr
+                        hisEn.record[k].resultsum=tmpSum
 
-                            if(hisEn.tripleSame.n!=0){
-                                if(hisEn.tripleSame.n==parseInt(info.message.lr[0],10)){
-                                    hisEn.tripleSame.t++
-                                }else{
-                                    hisEn.tripleSame.n=parseInt(info.message.lr[0],10)
-                                    hisEn.tripleSame.t=1
-                                }
+                        hisEn.tonowsum = hisEn.tonowsum+tmpSum
+
+                        if(hisEn.tripleSame.n!=0){
+                            if(hisEn.tripleSame.n==parseInt(info.message.lr[0],10)){
+                                hisEn.tripleSame.t++
                             }else{
                                 hisEn.tripleSame.n=parseInt(info.message.lr[0],10)
                                 hisEn.tripleSame.t=1
                             }
-                            console.log("==============="+info.message.ld+"开奖明细:"+info.message.lr+" 胜负:"+tmpSum)
+                        }else{
+                            hisEn.tripleSame.n=parseInt(info.message.lr[0],10)
+                            hisEn.tripleSame.t=1
+                        }
+                        console.log("==============="+info.message.ld+"开奖明细:"+info.message.lr+" 胜负:"+tmpSum)
+                        break;
+                    }
+                }
+            }
+        }
+
+
+        if (info.code == 1) {
+            if (info.message.coTs < 0 && info.message.ceTs > 0) {
+                var flag=true;
+                //查看当前轮是否已投注
+                if(hisEn.record.length>0){
+                    for(var k=hisEn.record.length-1;k>=0;k--){
+                        if(hisEn.record[k].roundno == info.message.cd){
+                            console.log("==============="+info.message.cd+"已投注")
+                            flag=false;
                             break;
                         }
                     }
                 }
-            }
-
-
-            if (info.code == 1) {
-                if (info.message.coTs < 0 && info.message.ceTs > 0) {
-                    var flag=true;
-                    //查看当前轮是否已投注
+                //可投注时，查看上一轮是否已开奖
+                if(flag){
                     if(hisEn.record.length>0){
                         for(var k=hisEn.record.length-1;k>=0;k--){
-                            if(hisEn.record[k].roundno == info.message.cd){
-                                flag=false;
+                            if(parseInt(hisEn.record[k].roundno, 10) == (parseInt(info.message.cd, 10) - 1)){
+                                if(hisEn.record.length>1 && !hisEn.record[k-1].isdraw){
+                                    console.log("==============="+info.message.cd+"上一轮未开奖")
+                                    flag=false;
+                                }
                                 break;
                             }
                         }
                     }
-                    //可投注时，查看上一轮是否已开奖
-                    if(flag){
-                        if(hisEn.record.length>0){
-                            for(var k=hisEn.record.length-1;k>=0;k--){
-                                if(parseInt(hisEn.record[k].roundno, 10) == (parseInt(info.message.cd, 10) - 1)){
-                                    if(!hisEn.record[k-1].isdraw){
-                                        flag=false;
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if(flag){
-                        //查询余额
-                        $.ajax({
-                            type: "post",
-                            async: true,
-                            url: "../ch/main.aspx/GetMembersMbinfo",
-                            contentType: "application/json; charset=utf-8",
-                            dataType: "json",
-                            data:"",
-                            success: function (data) {
-                                //重置投注对象数据
-                                betHandler.roundno = '';
-                                betHandler.betArr = [];
-                                betHandler.wagers = '';
-                                betHandler.singleBet = 0
-                                betHandler.nowbalance = 0
-                                betHandler.formToken = ""
+                }
+                if(flag){
+                    //查询余额
+                    $.ajax({
+                        type: "post",
+                        async: true,
+                        url: "../ch/main.aspx/GetMembersMbinfo",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        data:"",
+                        success: function (data) {
+                            //重置投注对象数据
+                            betHandler.roundno = '';
+                            betHandler.betArr = [];
+                            betHandler.wagers = '';
+                            betHandler.singleBet = 0
+                            betHandler.nowbalance = 0
+                            betHandler.formToken = ""
 
-                                var arr = parseJSON(data.d);
-                                var list = arr[0];
-                                if (list != null && list.Rows.length > 0) {
-                                    var drow = list.Rows[0];
-                                    betHandler.nowbalance = Math.round(drow.allowcreditquota);
-                                    console.log("下单前余额:"+betHandler.nowbalance)
-                                }
-                                
-                                //本轮投注操作
-                                console.log("==============="+betHandler.roundno+"投注明细:"+betHandler.wagers)
-                                betHandler.roundno = info.message.cd;
-                                betHandler.singleBet = betHandler.ref["" + (hisEn.lossRounds + 1)]
-                                betHandler.betArr = JSON.parse(JSON.stringify(hisEn.betArr))
-                                if(hisEn.lossRounds>=2&&hisEn.tripleSame.t>=2){
-                                    var nSmall = 0
-                                    var nEqual = 0
-                                    var nBig = 0
-                                    for(var n in betHandler.betArr){
-                                        if(betHandler.betArr[n]<hisEn.tripleSame.n){
-                                            nSmall++
-                                        }else if(betHandler.betArr[n]==hisEn.tripleSame.n){
-                                            nEqual++
-                                        }else if(betHandler.betArr[n]>hisEn.tripleSame.n){
-                                            nBig++
-                                        }
-                                    }
-                                    if(nEqual==0){
-                                        if(nSmall==betHandler.betArr.length){
-                                            betHandler.betArr.push(hisEn.tripleSame.n)
-                                        }else if(nBig==betHandler.betArr.length){
-                                            betHandler.betArr.splice(0, 0, hisEn.tripleSame.n);
-                                        }else{
-                                            betHandler.betArr.splice(nSmall, 0, hisEn.tripleSame.n);
-                                        }
-                                    }
-                                }
-                                for(var k in betHandler.betArr){
-                                    betHandler.wagers += "601:"+betHandler.betArr[k]+":"+betHandler.singleBet+";"
-                                }
-                                //betHandler.wagers 601:1:2;601:2:2;601:3:2;601:4:2;601:5:2;601:6:2;601:7:2
-                                var tmpRecord = {
-                                    roundno: betHandler.roundno, 
-                                    bettime: nowScaleSeconds(), 
-                                    betArr: betHandler.betArr,
-                                    wagers: betHandler.wagers, 
-                                    singleBet: betHandler.singleBet, 
-                                    isdraw: false, 
-                                    factwagers: "", 
-                                    resultsum: 0 
-                                };
-                                hisEn.record.push(tmpRecord)
-                                betHandler.bet_order()
-                            },
-                            error: function(err){
-                                
+                            var arr = parseJSON(data.d);
+                            var list = arr[0];
+                            if (list != null && list.Rows.length > 0) {
+                                var drow = list.Rows[0];
+                                betHandler.nowbalance = Math.round(drow.allowcreditquota);
+                                console.log("下单前余额:"+betHandler.nowbalance)
                             }
-                        });
-                    }
+                            
+                            //本轮投注操作
+                            betHandler.roundno = info.message.cd;
+                            betHandler.singleBet = betHandler.ref["" + (hisEn.lossRounds + 1)]
+                            betHandler.betArr = JSON.parse(JSON.stringify(hisEn.betArr))
+                            if(hisEn.lossRounds>=2&&hisEn.tripleSame.t>=2){
+                                var nSmall = 0
+                                var nEqual = 0
+                                var nBig = 0
+                                for(var n in betHandler.betArr){
+                                    if(betHandler.betArr[n]<hisEn.tripleSame.n){
+                                        nSmall++
+                                    }else if(betHandler.betArr[n]==hisEn.tripleSame.n){
+                                        nEqual++
+                                    }else if(betHandler.betArr[n]>hisEn.tripleSame.n){
+                                        nBig++
+                                    }
+                                }
+                                if(nEqual==0){
+                                    if(nSmall==betHandler.betArr.length){
+                                        betHandler.betArr.push(hisEn.tripleSame.n)
+                                    }else if(nBig==betHandler.betArr.length){
+                                        betHandler.betArr.splice(0, 0, hisEn.tripleSame.n);
+                                    }else{
+                                        betHandler.betArr.splice(nSmall, 0, hisEn.tripleSame.n);
+                                    }
+                                }
+                            }
+                            for(var k in betHandler.betArr){
+                                betHandler.wagers += "601:"+betHandler.betArr[k]+":"+betHandler.singleBet+";"
+                            }
+                            //betHandler.wagers 601:1:2;601:2:2;601:3:2;601:4:2;601:5:2;601:6:2;601:7:2
+                            var tmpRecord = {
+                                roundno: betHandler.roundno, 
+                                bettime: nowScaleSeconds(), 
+                                betArr: betHandler.betArr,
+                                wagers: betHandler.wagers, 
+                                singleBet: betHandler.singleBet, 
+                                isdraw: false, 
+                                factwagers: "", 
+                                resultsum: 0 
+                            };
+                            hisEn.record.push(tmpRecord)
+                            betHandler.bet_order()
+                        },
+                        error: function(err){
+                            console.log("----------GetMembersMbinfo错误:"+JSON.stringify(err)+"-----------")
+                        }
+                    });
                 }
             }
-        } catch (err) {
-
         }
-    }, function () {
-
+        
+    }, function (err) {
+        console.log("----------bet_loadDrawsInfo错误:"+JSON.stringify(err)+"-----------")
     })
 }
 // interval=window.clearInterval(interval)
