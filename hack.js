@@ -25,7 +25,7 @@ betHandler.gameno = 11;
 betHandler.wagerroundno = 'A';
 //设置投注计划
 // betHandler.ref = { "1": 2, "2": 8, "3": 28, "4": 96, "5": 322, "6": 1076, "7": 3588, "8": 11962, "9": 39876, "10": 132922 }
-betHandler.ref = { "1": 2, "2": 4, "3": 8, "4": 16, "5": 32, "6": 64, "7": 128, "8": 256, "9": 512, "10": 1024}
+betHandler.ref = { "1": 2, "2": 4, "3": 14, "4": 46, "5": 154, "6": 512, "7": 1708, "8": 5692, "9": 18974, "10": 63246}
 betHandler.roundno = '';
 betHandler.betArr = []
 betHandler.wagers = '';
@@ -199,15 +199,14 @@ function clock(){
     }, Math.floor(Math.random()*10000));
 }
 function bet_data_table(){
-    var title_arr = ['期数','投注时间','投注明细','单注金额','是否开奖','开奖明细','开奖胜负金额']
+    var title_arr = ['期数','投注明细','单注金额','是否开奖','开奖明细','开奖胜负金额','投注时间']
     var bet_table='<table style=\"position:fixed;z-index:10000;background-color:white;font-size:10px;left:20px;bottom:10px;width:800px;height:300px;overflow-y:scroll;overflow-x:scroll;text-align: center;border-top:solid 1px #333333;border-left:solid 1px #333333;border-right:0;border-bottom:0;\" border=\"1\" cellspacing=\"0\" cellpadding=\"0\" class=\"info_table\"><tbody><tr>'
     for(var k in title_arr){
-        bet_table += '<th nowrap=\"nowrap\"><span>'+title_arr[k]+'</span></th>'
+        bet_table += '<th nowrap=\"nowrap\" style="height:30px"><span>'+title_arr[k]+'</span></th>'
     }
     bet_table += '</tr>'
     for(var k in hisEn.record){
         bet_table += '<tr><td ><span>'+hisEn.record[k].roundno+'</span></td>'
-        bet_table += '<td ><span>'+hisEn.record[k].bettime+'</span></td>'
         bet_table += '<td ><span>'+hisEn.record[k].betArr+'</span></td>'
         bet_table += '<td ><span>'+hisEn.record[k].singleBet+'</span></td>'
         if(hisEn.record[k].isdraw){
@@ -216,7 +215,8 @@ function bet_data_table(){
             bet_table += '<td ><span>'+'未开'+'</span></td>'
         }
         bet_table += '<td ><span>'+hisEn.record[k].factwagers+'</span></td>'
-        bet_table += '<td ><span>'+hisEn.record[k].resultsum+'</span></td></tr>'
+        bet_table += '<td ><span>'+hisEn.record[k].resultsum+'</span></td>'
+        bet_table += '<td ><span>'+hisEn.record[k].bettime+'</span></td></tr>'
     }
     bet_table += '</tbody></table>'
 
@@ -239,7 +239,7 @@ function work() {
         //查看当前轮数信息及开奖信息
         var info = parseJSON(data.d);
         console.log("=============="+info.message.cd+"每分钟1次，尝试本轮下单，本轮已下单后，不重复下单=================")
-        console.log("hisEn.record:"+JSON.stringify(hisEn.record))
+        
         //开奖计算
         if(info.message.lr&&info.message.lr.length>0){
             if(hisEn.record.length>0){
@@ -264,9 +264,11 @@ function work() {
                             tmpSum = 0-tmpSingleBet*betHandler.betArr.length
                             hisEn.lossRounds++
                         }
-                        hisEn.record[k].isdraw=true
-                        hisEn.record[k].factwagers=info.message.lr
-                        hisEn.record[k].resultsum=tmpSum
+                        var tmpRecord = hisEn.record[k]
+                        tmpRecord.isdraw=true
+                        tmpRecord.factwagers=info.message.lr
+                        tmpRecord.resultsum=tmpSum
+                        hisEn.record.splice(k,1,tmpRecord)
 
                         hisEn.tonowsum = hisEn.tonowsum+tmpSum
 
@@ -307,7 +309,7 @@ function work() {
                     if(hisEn.record.length>0){
                         for(var k=hisEn.record.length-1;k>=0;k--){
                             if(parseInt(hisEn.record[k].roundno, 10) == (parseInt(info.message.cd, 10) - 1)){
-                                if(hisEn.record.length>1 && !hisEn.record[k-1].isdraw){
+                                if(!hisEn.record[k].isdraw){
                                     console.log("==============="+info.message.cd+"上一轮未开奖")
                                     flag=false;
                                 }
@@ -393,6 +395,8 @@ function work() {
                 }
             }
         }
+
+        // console.log("flag:"+flag+"    hisEn.record:"+JSON.stringify(hisEn.record))
         
     }, function (err) {
         console.log("----------bet_loadDrawsInfo错误:"+JSON.stringify(err)+"-----------")
