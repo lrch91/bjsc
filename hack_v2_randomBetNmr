@@ -1,4 +1,4 @@
-
+//betHandler.gameno待修改，clock定时秒数待修改
 //http://43nndgw.ttx158.com/cp6-1-mb/js/jscom.js
 //历史统计
 var hisEn = {};
