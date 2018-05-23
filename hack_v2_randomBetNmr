@@ -130,6 +130,7 @@ betHandler.bet_order = function () {
                                 error: function(err){
                                     console.log("ToCheckIn:请求失败")
                                 }
+                                
                             });
                         }
                     },
@@ -300,8 +301,9 @@ function work() {
                         var WorL = false
                         //比对开奖结果,待修改
                         for(var i in hisEn.record[k].betArr){
-                            if(hisEn.record[k].betArr[i]==parseInt(info.message.lr[hisEn.record[k].betNmr],10)){
+                            if(hisEn.record[k].betArr[i]==parseInt(info.message.lr[hisEn.record[k].betNmr-1],10)){
                                 WorL = true
+                                console.log("兑奖明细hisEn.record[k].betArr[i]:"+hisEn.record[k].betArr[i]+"=====parseInt(info.message.lr[hisEn.record[k].betNmr-1],10):"+parseInt(info.message.lr[hisEn.record[k].betNmr-1],10))
                                 break
                             }
                         }
