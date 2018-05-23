@@ -1,4 +1,4 @@
-//betHandler.gameno待修改，clock定时秒数待修改
+
 //http://43nndgw.ttx158.com/cp6-1-mb/js/jscom.js
 //历史统计
 var hisEn = {};
@@ -37,9 +37,9 @@ var betHandler = {};
 betHandler.account = "yavv556";
 betHandler.stype = "checkxiadan";
 //bjsc
-// betHandler.gameno = 11;
+betHandler.gameno = 11;
 //jssc
-betHandler.gameno = 22;
+// betHandler.gameno = 22;
 betHandler.wagerroundno = 'A';
 //设置投注计划
 // betHandler.ref = { "1": 2, "2": 8, "3": 28, "4": 96, "5": 322, "6": 1076, "7": 3588, "8": 11962, "9": 39876, "10": 132922 }
@@ -119,6 +119,7 @@ betHandler.bet_order = function () {
                                         data:JSON.stringify({gameno:betHandler.gameno,wagerroundstring:betHandler.wagerroundno,arrstring:arrstring,roundno:betHandler.roundno,lianma_transtrin:"",token:betHandler.formToken}),
                                         success: function (data) {
                                             //下单成功
+                                            console.log("========下单参数"+JSON.stringify({gameno:betHandler.gameno,wagerroundstring:betHandler.wagerroundno,arrstring:arrstring,roundno:betHandler.roundno,lianma_transtrin:"",token:betHandler.formToken}))
                                             console.log("==============="+betHandler.roundno+"投注明细:"+betHandler.wagers+"==============")
                                         },
                                         error: function(err){
@@ -210,7 +211,7 @@ function nowScaleSeconds() {
 }
 
 
-var interval = self.setInterval("clock()", 18 * 1000)
+var interval = self.setInterval("clock()", 60 * 1000)
 // interval = window.clearInterval(interval)
 var recordPageSize = 10;
 function clock(){
@@ -256,7 +257,7 @@ function bet_data_table(recordPageNum){
     }
     
     bet_table+='<tr></tr>'
-    bet_table += '</tbody><td><button onclick="toPage('+(recordPageNum-1)+')">上一页</button><span>'+recordPageNum+'/'+(hisEn.record.length+recordPageSize-1)/recordPageSize+'</span><button onclick="toPage('+(recordPageNum+1)+')">下一页</button></td></table>'
+    bet_table += '</tbody><td><button onclick="toPage('+(recordPageNum-1)+')">上一页</button><span>'+recordPageNum+'/'+parseInt((hisEn.record.length+recordPageSize-1)/recordPageSize)+'</span><button onclick="toPage('+(recordPageNum+1)+')">下一页</button></td></table>'
 
     var bet_div=document.getElementById("bet_data_table")
     if(!bet_div){
@@ -298,8 +299,8 @@ function work() {
                         var tmpSum = 0
                         var WorL = false
                         //比对开奖结果,待修改
-                        for(var i in betHandler.betArr){
-                            if(betHandler.betArr[i]==parseInt(info.message.lr[betHandler.betNmr],10)){
+                        for(var i in hisEn.record[k].betArr){
+                            if(hisEn.record[k].betArr[i]==parseInt(info.message.lr[hisEn.record[k].betNmr],10)){
                                 WorL = true
                                 break
                             }
@@ -308,12 +309,12 @@ function work() {
                         if(WorL){
                             //胜
                             var tmpSingleBet = parseInt(hisEn.record[k].singleBet, 10)
-                            tmpSum = tmpSingleBet*(10 - betHandler.betArr.length)
+                            tmpSum = tmpSingleBet*(10 - hisEn.record[k].betArr.length)
                             hisEn.lossRounds = 0
                         }else{
                             //负
                             var tmpSingleBet = parseInt(hisEn.record[k].singleBet, 10)
-                            tmpSum = 0-tmpSingleBet*betHandler.betArr.length
+                            tmpSum = 0-tmpSingleBet*hisEn.record[k].betArr.length
                             hisEn.lossRounds++
                         }
                         var tmpRecord = hisEn.record[k]
