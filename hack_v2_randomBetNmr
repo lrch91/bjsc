@@ -1,4 +1,5 @@
 
+//betHandler.gameno修改和bt_clock间隔时间修改
 //http://43nndgw.ttx158.com/cp6-1-mb/js/jscom.js
 //历史统计
 var hisEn = {};
@@ -219,10 +220,10 @@ function nowScaleSeconds() {
 }
 
 
-var interval = self.setInterval("clock()", 60 * 1000)
+var interval = self.setInterval("bt_clock()", 60 * 1000)
 // interval = window.clearInterval(interval)
 var recordPageSize = 10;
-function clock(){
+function bt_clock(){
     setTimeout(() => {
         work()
         var tempDiv=document.getElementById("bet_data_table")
