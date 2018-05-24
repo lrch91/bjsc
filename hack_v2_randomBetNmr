@@ -29,8 +29,8 @@ hisEn.betNmr = function(){
 }
 hisEn.lossRounds = 0
 hisEn.tripleSame = {n:0,t:0}
-//                  期数        投注时间     投注明细     投注位,            单注金额      是否开奖      开奖明细        开奖胜负金额
-var tmpRecord = { roundno: "", bettime: "", betArr: "", betNmr:"",wagers: "", singleBet: "", isdraw: "", factwagers: "", resultsum: "" };
+//投注记录样例，不参与计算:   期数        投注时间     投注明细     投注位,                单注金额      是否开奖      开奖明细        开奖胜负金额
+var tmpRecord1 =       { roundno: "", bettime: "", betArr: "", betNmr:"",wagers: "", singleBet: "", isdraw: "", factwagers: "", resultsum: "" };
 
 //投注器
 var betHandler = {};
@@ -52,7 +52,7 @@ betHandler.singleBet = 0
 betHandler.nowbalance = 0
 betHandler.formToken = ""
 
-betHandler.bet_order = function () {
+betHandler.bet_order = function (tmpRecord) {
     if(betHandler.roundno==''||betHandler.wagers ==''){
         return;
     }
@@ -118,7 +118,8 @@ betHandler.bet_order = function () {
                                         dataType: "json",
                                         data:JSON.stringify({gameno:betHandler.gameno,wagerroundstring:betHandler.wagerroundno,arrstring:arrstring,roundno:betHandler.roundno,lianma_transtrin:"",token:betHandler.formToken}),
                                         success: function (data) {
-                                            //下单成功
+                                            //下单成功，添加下单记录
+                                            hisEn.record.push(tmpRecord);
                                             console.log("========下单参数"+JSON.stringify({gameno:betHandler.gameno,wagerroundstring:betHandler.wagerroundno,arrstring:arrstring,roundno:betHandler.roundno,lianma_transtrin:"",token:betHandler.formToken}))
                                             console.log("==============="+betHandler.roundno+"投注明细:"+betHandler.wagers+"==============")
                                         },
@@ -352,16 +353,17 @@ function work() {
             if (info.message.coTs < 0 && info.message.ceTs > 0) {
                 //是否该投注标识位(没有当前投注记录，且上一次投注已开奖)
                 var flag=true;
+                var noBetMsg = '=================='
                 //查看当前轮是否应该投注
                 if(hisEn.record.length>0){
                     if(hisEn.record[hisEn.record.length-1].isdraw==false){
-                        console.log("===============前一轮未开奖")
-                        flag = false
+                        noBetMsg+="前一轮未开奖，"
+                        flag=false
                     }
                     if(hisEn.record.length<=10){
                         for(var k=hisEn.record.length-1;k>=0;k--){
                             if(parseInt(hisEn.record[k].roundno, 10) == (parseInt(info.message.cd, 10))){
-                                console.log("==============="+info.message.cd+"已投注")
+                                noBetMsg+=""+info.message.cd+"已投注，"
                                 flag=false;
                                 break;
                             }
@@ -369,12 +371,16 @@ function work() {
                     }else{
                         for(var k=hisEn.record.length-1;k>=hisEn.record.length-10;k--){
                             if(parseInt(hisEn.record[k].roundno, 10) == (parseInt(info.message.cd, 10))){
-                                console.log("==============="+info.message.cd+"已投注")
+                                console.log(""+info.message.cd+"已投注，")
                                 flag=false;
                                 break;
                             }
                         }
                     }
+                }
+                if(!flag){
+                    noBetMsg+="======================"
+                    console.log(noBetMsg)
                 }
                 //可投注期，且上一投注已开奖，本轮未投注时，执行投注
                 if(flag){
@@ -431,8 +437,8 @@ function work() {
                                 factwagers: "", 
                                 resultsum: 0 
                             };
-                            hisEn.record.push(tmpRecord)
-                            betHandler.bet_order()
+                            // hisEn.record.push(tmpRecord);
+                            betHandler.bet_order(tmpRecord)
                         },
                         error: function(err){
                             console.log("----------GetMembersMbinfo错误:"+JSON.stringify(err)+"-----------")
