@@ -34,6 +34,12 @@ var tmpRecord1 =       { roundno: "", bettime: "", betArr: "", betNmr:"",wagers:
 
 //投注器
 var betHandler = {};
+//禁止开关
+betHandler.isStop=false
+function setStop(){
+    betHandler.isStop = true
+}
+
 betHandler.account = "yavv556";
 betHandler.stype = "checkxiadan";
 //bjsc
@@ -259,8 +265,7 @@ function bet_data_table(recordPageNum){
     }
     
     bet_table+='<tr></tr>'
-    bet_table += '</tbody><td><button onclick="toPage('+(recordPageNum-1)+')">上一页</button><span>'+recordPageNum+'/'+parseInt((hisEn.record.length+recordPageSize-1)/recordPageSize)+'</span><button onclick="toPage('+(recordPageNum+1)+')">下一页</button></td></table>'
-
+    bet_table += '</tbody><td><button onclick="setStop()">停止</button><button onclick="toPage('+(recordPageNum-1)+')">上一页</button><span>'+recordPageNum+'/'+parseInt((hisEn.record.length+recordPageSize-1)/recordPageSize)+'</span><button onclick="toPage('+(recordPageNum+1)+')">下一页</button></td></table>'
     var bet_div=document.getElementById("bet_data_table")
     if(!bet_div){
         bet_div = document.createElement('div');
@@ -295,7 +300,11 @@ function work() {
         //开奖计算
         if(info.message.lr&&info.message.lr.length>0){
             if(hisEn.record.length>0){
-                for(var k=hisEn.record.length-1;k>=0;k--){
+                var tempRound = 0
+                if(hisEn.record.length>10){
+                    tempRound = hisEn.record.length-10
+                }
+                for(var k=hisEn.record.length-1;k>=tempRound;k--){
                     //更新开奖信息
                     if(hisEn.record[k].roundno == info.message.ld&&hisEn.record[k].isdraw==false){
                         var tmpSum = 0
@@ -438,7 +447,12 @@ function work() {
                                 resultsum: 0 
                             };
                             // hisEn.record.push(tmpRecord);
-                            betHandler.bet_order(tmpRecord)
+                            if(betHandler.isStop==false||(betHandler.isStop==true&&hisEn.record.length>0&&parseInt(hisEn.record[hisEn.record.length-1].resultsum)<0)){
+                                //最后确认是否允许投注(禁止按钮相关)
+                                betHandler.bet_order(tmpRecord)
+                            }else{
+                                console.log("===============已停止投注================")
+                            }
                         },
                         error: function(err){
                             console.log("----------GetMembersMbinfo错误:"+JSON.stringify(err)+"-----------")
