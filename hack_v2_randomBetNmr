@@ -28,7 +28,6 @@ hisEn.betNmr = function(){
     return (Math.floor(Math.random()*10000)%10)+1
 }
 hisEn.lossRounds = 0
-hisEn.tripleSame = {n:0,t:0}
 //投注记录样例，不参与计算:   期数        投注时间     投注明细     投注位,                单注金额      是否开奖      开奖明细        开奖胜负金额
 var tmpRecord1 =       { roundno: "", bettime: "", betArr: "", betNmr:"",wagers: "", singleBet: "", isdraw: "", factwagers: "", resultsum: "" };
 
@@ -46,9 +45,9 @@ function setStart(){
 betHandler.account = "yavv556";
 betHandler.stype = "checkxiadan";
 //bjsc
-// betHandler.gameno = 11;
+betHandler.gameno = 11;
 //jssc
-betHandler.gameno = 22;
+// betHandler.gameno = 22;
 betHandler.wagerroundno = 'A';
 //设置投注计划
 // betHandler.ref = { "1": 2, "2": 8, "3": 28, "4": 96, "5": 322, "6": 1076, "7": 3588, "8": 11962, "9": 39876, "10": 132922 }
@@ -222,7 +221,7 @@ function nowScaleSeconds() {
 }
 
 
-var interval = self.setInterval("bt_clock()", 18 * 1000)
+var interval = self.setInterval("bt_clock()", 60 * 1000)
 // interval = window.clearInterval(interval)
 var recordPageSize = 10;
 function bt_clock(){
@@ -340,18 +339,6 @@ function work() {
 
                         hisEn.tonowsum = hisEn.tonowsum+tmpSum
 
-                        //连负时，检验是否多次开同一个数
-                        if(hisEn.tripleSame.n!=0){
-                            if(hisEn.tripleSame.n==parseInt(info.message.lr[0],10)){
-                                hisEn.tripleSame.t++
-                            }else{
-                                hisEn.tripleSame.n=parseInt(info.message.lr[0],10)
-                                hisEn.tripleSame.t=1
-                            }
-                        }else{
-                            hisEn.tripleSame.n=parseInt(info.message.lr[0],10)
-                            hisEn.tripleSame.t=1
-                        }
                         console.log("==============="+info.message.ld+"开奖明细:"+info.message.lr+" 胜负:"+tmpSum)
                         break;
                     }
@@ -428,10 +415,6 @@ function work() {
                             betHandler.singleBet = betHandler.ref["" + (hisEn.lossRounds + 1)]
                             //设置投注号
                             betHandler.betArr = hisEn.betArr()
-                            if(hisEn.lossRounds>=2&&hisEn.tripleSame.t>=2){
-                                betHandler.betArr.push(hisEn.tripleSame.n)
-                                betHandler.betArr = betHandler.betArr.sort(sortNum)
-                            }
                             //设置投注位
                             betHandler.betNmr=hisEn.betNmr()
                             for(var k in betHandler.betArr){
