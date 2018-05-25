@@ -6,7 +6,6 @@ hisEn.record = [];
 hisEn.starttime = "";
 //累计胜负金额
 hisEn.tonowsum = 0
-//连续失败轮数
 hisEn.betArr = function(){
     var arr = [1,2,3,4,5,6,7,8,9,10]
     var rst = []
